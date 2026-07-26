@@ -1,0 +1,98 @@
+name: lifeos
+description: "LifeOS — an AI-powered personal operating system: journal, habits, goals, tasks, calendar, money, health and an assistant that understands your life over time."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  # Material 3 tokens used here (ColorScheme.withValues, CardThemeData,
+  # ProgressIndicatorThemeData.year2023) require Flutter 3.32 or newer.
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.32.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # --- State management / navigation / DI -------------------------------
+  flutter_riverpod: ^2.6.1
+  go_router: ^14.6.2
+
+  # --- Persistence -------------------------------------------------------
+  drift: ^2.23.0
+  drift_flutter: ^0.2.4
+  sqlite3_flutter_libs: ^0.5.26
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.5
+  path: ^1.9.0
+
+  # --- Backend / auth / push --------------------------------------------
+  supabase_flutter: ^2.8.0
+  google_sign_in: ^6.2.2
+  sign_in_with_apple: ^6.1.3
+  firebase_core: ^3.8.0
+  firebase_messaging: ^15.1.5
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.0
+
+  # --- Security ----------------------------------------------------------
+  flutter_secure_storage: ^9.2.4
+  local_auth: ^2.3.0
+  crypto: ^3.0.6
+  encrypt: ^5.0.3
+
+  # --- Models / serialization -------------------------------------------
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+
+  # --- UI ----------------------------------------------------------------
+  google_fonts: ^6.2.1
+  dynamic_color: ^1.7.0
+  fl_chart: ^0.69.2
+  table_calendar: ^3.1.3
+  flutter_animate: ^4.5.2
+  cached_network_image: ^3.4.1
+
+  # --- Capabilities ------------------------------------------------------
+  http: ^1.2.2
+  connectivity_plus: ^6.1.0
+  image_picker: ^1.1.2
+  geolocator: ^13.0.2
+  speech_to_text: ^7.0.0
+  share_plus: ^10.1.3
+  home_widget: ^0.7.0
+  pdf: ^3.11.1
+  printing: ^5.13.4
+  csv: ^6.0.0
+
+  # --- Utilities ---------------------------------------------------------
+  intl: ^0.19.0
+  uuid: ^4.5.1
+  collection: ^1.19.0
+  logging: ^1.3.0
+
+  # Optional, opt-in via `EnableOcr` — see docs/DEPLOYMENT.md.
+  # Uncomment to enable on-device receipt OCR (adds ~30MB to Android builds).
+  # google_mlkit_text_recognition: ^0.14.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  build_runner: ^2.4.13
+  freezed: ^3.0.0
+  json_serializable: ^6.9.0
+  drift_dev: ^2.23.0
+  custom_lint: ^0.7.0
+  riverpod_lint: ^2.6.3
+  flutter_lints: ^5.0.0
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
