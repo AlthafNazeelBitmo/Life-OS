@@ -27,7 +27,7 @@ final StreamProvider<List<Insight>> insightsProvider =
 /// Kept as an explicit action rather than an on-open side effect: it costs a
 /// model call, and insights that regenerate every time you glance at the screen
 /// stop feeling like observations and start feeling like noise.
-final FutureProvider<int> generateInsightsProvider =
+final AutoDisposeFutureProvider<int> generateInsightsProvider =
     FutureProvider.autoDispose<int>((ref) async {
   final now = DateTime.now();
   final lifeContext = await ref.watch(contextBuilderProvider).forRange(
@@ -55,7 +55,10 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
 
   Future<void> _generate() async {
     setState(() => _generating = true);
-    await ref.refresh(generateInsightsProvider.future);
+    // Invalidate, then await the rebuilt future: `refresh` returns a value the
+    // caller is expected to use, and here only the side effect matters.
+    ref.invalidate(generateInsightsProvider);
+    await ref.read(generateInsightsProvider.future);
     if (mounted) setState(() => _generating = false);
   }
 

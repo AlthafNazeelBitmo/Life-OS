@@ -6,7 +6,10 @@ import '../../core/extensions/date_time_x.dart';
 import '../../core/settings/settings_controller.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/repositories/repository_providers.dart';
+import '../../domain/entities/calendar_event.dart';
 import '../../domain/entities/mood_entry.dart';
+import '../../domain/entities/person.dart';
+import '../../domain/entities/task.dart';
 import 'notification_service.dart';
 
 /// Decides *when* a reminder should fire, not just that it should.
@@ -104,7 +107,7 @@ class SmartScheduler {
     final tasks = await _ref.read(taskRepositoryProvider).all();
     var count = 0;
 
-    for (final task in (tasks.valueOrNull ?? const []).take(40)) {
+    for (final task in (tasks.valueOrNull ?? const <Task>[]).take(40)) {
       final remindAt = task.remindAt ??
           // No explicit reminder? Nudge an hour before it is due, which is
           // still actionable, unlike a notification at the deadline itself.
@@ -135,7 +138,7 @@ class SmartScheduler {
         .range(now, now.add(const Duration(days: 14)));
 
     var count = 0;
-    for (final event in (events.valueOrNull ?? const []).take(60)) {
+    for (final event in (events.valueOrNull ?? const <CalendarEvent>[]).take(60)) {
       for (final offset in event.reminderOffsets) {
         final when = event.start.subtract(Duration(minutes: offset));
         if (when.isBefore(now)) continue;
@@ -160,7 +163,7 @@ class SmartScheduler {
     final people = await _ref.read(peopleRepositoryProvider).needingFollowUp();
     var count = 0;
 
-    for (final person in (people.valueOrNull ?? const []).take(5)) {
+    for (final person in (people.valueOrNull ?? const <Person>[]).take(5)) {
       final days = person.daysSinceContact;
       await _notifications.schedule(
         key: 'person-${person.id}',

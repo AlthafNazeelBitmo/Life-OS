@@ -3,9 +3,12 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   plugins:
     - custom_lint
+  # Generated sources are NOT excluded on purpose. Excluding them once hid a
+  # real compile error: `app_database.g.dart` referenced enum types that were
+  # only imported by `tables.dart`, and the analyzer stayed silent while the
+  # compiler failed. Generated files carry their own ignore_for_file headers,
+  # so analysing them costs nothing and catches this class of bug.
   exclude:
-    - "**/*.g.dart"
-    - "**/*.freezed.dart"
     - "build/**"
   errors:
     invalid_annotation_target: ignore

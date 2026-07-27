@@ -76,9 +76,12 @@ class MoneyScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final transactions = ref.watch(_transactionsProvider).valueOrNull ?? const [];
-    final budgets = ref.watch(_budgetsProvider).valueOrNull ?? const [];
-    final categories = ref.watch(categoriesProvider).valueOrNull ?? const [];
+    final transactions =
+        ref.watch(_transactionsProvider).valueOrNull ?? const <MoneyTransaction>[];
+    final budgets =
+        ref.watch(_budgetsProvider).valueOrNull ?? const <BudgetProgress>[];
+    final categories =
+        ref.watch(categoriesProvider).valueOrNull ?? const <MoneyCategory>[];
     final analysis = ref.watch(expenseAnalysisProvider);
     final currency = ref.watch(currencyProvider);
 

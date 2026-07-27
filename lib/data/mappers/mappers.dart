@@ -8,6 +8,7 @@ import '../../domain/entities/habit.dart';
 import '../../domain/entities/health_metric.dart';
 import '../../domain/entities/insight.dart';
 import '../../domain/entities/journal_entry.dart';
+import '../../domain/entities/mood_entry.dart';
 import '../../domain/entities/person.dart';
 import '../../domain/entities/task.dart';
 import '../local/app_database.dart';

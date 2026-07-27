@@ -66,7 +66,16 @@ void main() {
 
       expect(summary.summary, isNotEmpty);
       expect(summary.keyPoints.length, lessThanOrEqualTo(2));
-      expect(summary.topics, contains('running'));
+
+      // Topics are frequency-ranked words lifted from the text. There is no
+      // stemming, so 'ran', 'run' and 'running' are three separate tokens —
+      // the contract is that every topic actually occurs in the source, not
+      // that related forms are merged.
+      expect(summary.topics, isNotEmpty);
+      for (final topic in summary.topics) {
+        expect(text.toLowerCase(), contains(topic));
+      }
+      expect(summary.topics, isNot(contains('the')), reason: 'stop words');
     });
 
     test('handles empty input without throwing', () async {

@@ -61,12 +61,26 @@ git clone <this repo> && cd Life-OS
 flutter run
 ```
 
-`bootstrap.sh` generates the native platform folders with your Flutter version,
-fetches packages, and runs code generation. Platform folders are not vendored
-on purpose — `flutter create` emits them correctly for whatever toolchain you
-have, which avoids stale Gradle and CocoaPods pins.
+`bootstrap.sh` fetches packages and runs code generation. Built and verified
+against **Flutter 3.35.4 / Dart 3.9.2**.
 
-Requires **Flutter 3.32+ / Dart 3.8+**.
+`android/` **is** committed, because it carries configuration `flutter create`
+does not generate and the app does not work without: core library desugaring
+for `flutter_local_notifications`, `FlutterFragmentActivity` for `local_auth`'s
+biometric prompt, the boot receiver that re-arms scheduled reminders, and the
+runtime permissions. `ios/` is not vendored — run
+`flutter create . --platforms=ios` and apply the `Info.plist` keys from
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+### Build an APK
+
+```bash
+flutter build apk --release --split-per-abi   # ~33 MB for arm64
+flutter build apk --release                   # ~78 MB, runs on any ABI
+```
+
+Release builds are signed with the debug key so the output installs directly.
+Replace it with a real signing config before publishing.
 
 ### Running it
 
@@ -149,8 +163,12 @@ built-in on-device implementation. Adding a fifth is one enum value, one
 
 ## Project status and honest limitations
 
-This is a complete, runnable foundation built to be extended, and a few things
-are deliberately marked rather than hidden:
+The project compiles, all **112 tests pass**, and `flutter analyze` reports zero
+errors and zero warnings. A release APK has been built and installed-tested for
+packaging. What has *not* happened is prolonged use on a real device across all
+modules — treat the first run as a shakedown, not a finished product.
+
+A few things are deliberately marked rather than hidden:
 
 - **Receipt OCR ships behind an interface with a stub implementation.** ML Kit
   adds ~30 MB to an Android build, so it is opt-in. The parser that turns OCR

@@ -1,7 +1,11 @@
 import '../../core/utils/formatters.dart';
+import '../../domain/entities/calendar_event.dart';
 import '../../domain/entities/chat.dart';
+import '../../domain/entities/finance.dart';
 import '../../domain/entities/health_metric.dart';
+import '../../domain/entities/journal_entry.dart';
 import '../../domain/entities/mood_entry.dart';
+import '../../domain/entities/task.dart';
 import '../../domain/repositories/calendar_repository.dart';
 import '../../domain/repositories/finance_repository.dart';
 import '../../domain/repositories/goal_repository.dart';
@@ -63,7 +67,7 @@ class ContextBuilder {
 
     // --- Journal ---------------------------------------------------------
     final entries = await journal.page(limit: 40, offset: 0, from: from, to: to);
-    for (final entry in entries.valueOrNull ?? const []) {
+    for (final entry in entries.valueOrNull ?? const <JournalEntry>[]) {
       chunks.add(
         ContextChunk(
           token: nextToken('j'),
@@ -82,7 +86,8 @@ class ContextBuilder {
     }
     final streak = await journal.currentStreak();
     stats['journal streak (days)'] = streak.valueOrNull ?? 0;
-    stats['journal entries in window'] = (entries.valueOrNull ?? const []).length;
+    stats['journal entries in window'] =
+        (entries.valueOrNull ?? const <JournalEntry>[]).length;
 
     // --- Mood ------------------------------------------------------------
     final moods = await mood.range(from, to);
@@ -112,7 +117,7 @@ class ContextBuilder {
       }
       final correlations = await mood.correlations();
       for (final correlation
-          in (correlations.valueOrNull ?? const []).take(6)) {
+          in (correlations.valueOrNull ?? const <MoodCorrelation>[]).take(6)) {
         stats['pattern: ${correlation.factor}'] = correlation.description;
       }
     }
@@ -157,7 +162,7 @@ class ContextBuilder {
     stats['tasks completed in window'] = completed.valueOrNull ?? 0;
     final open = await tasks.all();
     final overdue =
-        (open.valueOrNull ?? const []).where((t) => t.isOverdue).toList();
+        (open.valueOrNull ?? const <Task>[]).where((t) => t.isOverdue).toList();
     stats['tasks overdue'] = overdue.length;
     for (final task in overdue.take(8)) {
       chunks.add(
@@ -174,8 +179,9 @@ class ContextBuilder {
 
     // --- Calendar --------------------------------------------------------
     final events = await calendar.range(from, to);
-    stats['events in window'] = (events.valueOrNull ?? const []).length;
-    for (final event in (events.valueOrNull ?? const []).take(15)) {
+    stats['events in window'] =
+        (events.valueOrNull ?? const <CalendarEvent>[]).length;
+    for (final event in (events.valueOrNull ?? const <CalendarEvent>[]).take(15)) {
       chunks.add(
         ContextChunk(
           token: nextToken('e'),
@@ -203,7 +209,8 @@ class ContextBuilder {
       }
     }
     final subscriptions = await finance.detectSubscriptions();
-    for (final subscription in (subscriptions.valueOrNull ?? const []).take(6)) {
+    for (final subscription
+        in (subscriptions.valueOrNull ?? const <DetectedSubscription>[]).take(6)) {
       chunks.add(
         ContextChunk(
           token: nextToken('x'),
@@ -254,7 +261,7 @@ class ContextBuilder {
     final chunks = <ContextChunk>[];
     var counter = 0;
 
-    for (final hit in hits.valueOrNull ?? const []) {
+    for (final hit in hits.valueOrNull ?? const <SearchHit>[]) {
       chunks.add(
         ContextChunk(
           token: '${hit.source.name.substring(0, 1)}${++counter}',

@@ -2,7 +2,21 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
 import '../../core/utils/app_logger.dart';
-import '../../domain/entities/finance.dart' show TransactionType;
+// The generated part file below is compiled in *this* library's scope, and Dart
+// imports are not transitive — so every enum and converter type used by the
+// tables has to be visible here as well as in tables.dart.
+import '../../domain/entities/calendar_event.dart';
+import '../../domain/entities/chat.dart';
+import '../../domain/entities/finance.dart';
+import '../../domain/entities/goal.dart';
+import '../../domain/entities/habit.dart';
+import '../../domain/entities/health_metric.dart';
+import '../../domain/entities/insight.dart';
+import '../../domain/entities/journal_entry.dart';
+import '../../domain/entities/person.dart';
+import '../../domain/entities/recurrence.dart';
+import '../../domain/entities/task.dart';
+import 'converters.dart';
 import 'tables.dart';
 
 part 'app_database.g.dart';
@@ -120,10 +134,10 @@ class AppDatabase extends _$AppDatabase {
         <Insertable<MoneyCategoryRow>>[
           for (final seed in seeds)
             MoneyCategoriesCompanion.insert(
-              id: seed[0]! as String,
-              name: seed[1]! as String,
-              emoji: Value(seed[2]! as String),
-              colorValue: Value(seed[3]! as int),
+              id: seed[0] as String,
+              name: seed[1] as String,
+              emoji: Value(seed[2] as String),
+              colorValue: Value(seed[3] as int),
               kind: seed[0] == 'cat_income'
                   ? TransactionType.income
                   : TransactionType.expense,

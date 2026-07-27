@@ -183,6 +183,10 @@ class NotificationService {
           tz.TZDateTime.from(when, tz.local),
           _details(channel),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          // Wall-clock, not absolute time: a reminder set for 09:00 should
+          // stay at 09:00 when the user changes timezone.
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.wallClockTime,
           payload: payload,
         );
       }, onError: (e, s) => UnknownFailure(cause: e));
@@ -217,6 +221,8 @@ class NotificationService {
           next,
           _details(channel),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.wallClockTime,
           matchDateTimeComponents: DateTimeComponents.time,
           payload: payload,
         );

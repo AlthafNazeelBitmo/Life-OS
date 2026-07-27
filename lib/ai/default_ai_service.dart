@@ -97,7 +97,7 @@ class DefaultAiService implements AIService {
   ) async {
     try {
       return Ok<T>(await body());
-    } catch (error, stackTrace) {
+    } catch (error) {
       AppLogger.warn('ai', 'Call failed on $providerId', error);
       final fallback = _fallback;
       if (fallback != null && viaFallback != null) {
