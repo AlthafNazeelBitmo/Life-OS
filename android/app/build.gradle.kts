@@ -36,8 +36,14 @@ android {
             // installable out of the box. Replace with a real signing config
             // before publishing — see docs/DEPLOYMENT.md.
             signingConfig = signingConfigs.getByName("debug")
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // R8 strips the large chunks of Firebase/Supabase Java that an
+            // unconfigured build never reaches. Keep rules in proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 }
