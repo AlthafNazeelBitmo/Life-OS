@@ -7,6 +7,7 @@ import '../../../../core/router/app_routes.dart';
 import '../../../../core/settings/settings_controller.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/chip_strip.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/ids.dart';
 import '../../../../data/repositories/repository_providers.dart';
@@ -22,12 +23,8 @@ class QuickAddBar extends ConsumerWidget {
   const QuickAddBar({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => SizedBox(
-        height: 44,
-        child: ListView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: Gap.lg),
-          children: <Widget>[
+  Widget build(BuildContext context, WidgetRef ref) => ChipStrip(
+        children: <Widget>[
             _QuickChip(
               icon: Icons.edit_note_rounded,
               label: 'Journal',
@@ -58,8 +55,7 @@ class QuickAddBar extends ConsumerWidget {
               color: AppColors.calendar,
               onTap: () => context.push(Routes.calendar),
             ),
-          ],
-        ),
+        ],
       );
 
   Future<void> _quickExpense(BuildContext context, WidgetRef ref) async {
@@ -201,14 +197,11 @@ class _QuickChip extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(right: Gap.sm),
-        child: ActionChip(
+  Widget build(BuildContext context) => ActionChip(
           onPressed: onTap,
           avatar: Icon(icon, size: 18, color: color),
-          label: Text(label),
-          tooltip: 'Quick add: $label',
-        ),
+        label: Text(label),
+        tooltip: 'Quick add: $label',
       );
 }
 

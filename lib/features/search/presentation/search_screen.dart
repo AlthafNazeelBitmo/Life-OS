@@ -12,6 +12,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_backdrop.dart';
+import '../../../core/widgets/chip_strip.dart';
 import '../../../core/widgets/glass_card.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../data/repositories/repository_providers.dart';
@@ -118,42 +119,38 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
-          title: SearchBar(
-            controller: _controller,
-            autoFocus: widget.initialQuery.isEmpty,
-            hintText: 'Search everything',
-            leading: const Icon(Icons.search_rounded),
-            onChanged: _onChanged,
-            onSubmitted: _search,
-            elevation: const WidgetStatePropertyAll<double>(0),
-          ),
+          title: const Text('Search'),
         ),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, 100),
           children: <Widget>[
-            SizedBox(
-              height: 40,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: <Widget>[
-                  for (final source in CitationSource.values)
-                    Padding(
-                      padding: const EdgeInsets.only(right: Gap.xs),
-                      child: FilterChip(
-                        label: Text(source.name),
-                        selected: _sources.contains(source),
-                        onSelected: (_) {
-                          setState(() {
-                            final next = Set<CitationSource>.from(_sources);
-                            if (!next.remove(source)) next.add(source);
-                            _sources = next;
-                          });
-                          _search(_controller.text);
-                        },
-                      ),
-                    ),
-                ],
-              ),
+            SearchBar(
+              controller: _controller,
+              autoFocus: widget.initialQuery.isEmpty,
+              hintText: 'Search everything',
+              leading: const Icon(Icons.search_rounded),
+              onChanged: _onChanged,
+              onSubmitted: _search,
+              elevation: const WidgetStatePropertyAll<double>(0),
+            ),
+            Gap.h12,
+            ChipStrip(
+              padding: EdgeInsets.zero,
+              children: <Widget>[
+                for (final source in CitationSource.values)
+                  FilterChip(
+                    label: Text(source.name),
+                    selected: _sources.contains(source),
+                    onSelected: (_) {
+                      setState(() {
+                        final next = Set<CitationSource>.from(_sources);
+                        if (!next.remove(source)) next.add(source);
+                        _sources = next;
+                      });
+                      _search(_controller.text);
+                    },
+                  ),
+              ],
             ),
             Gap.h12,
             if (_controller.text.trim().isNotEmpty)

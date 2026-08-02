@@ -354,7 +354,14 @@ class TasksCard extends ConsumerWidget {
                               task.isOverdue
                                   ? 'Overdue'
                                   : 'Due ${Fmt.time(task.dueAt!)}',
-                            if (task.aiReason != null) task.aiReason!,
+                            // The planner's reason for an overdue task is
+                            // literally "Overdue", which would read
+                            // "Overdue · Overdue" next to the due label.
+                            if (task.aiReason != null &&
+                                !task.aiReason!
+                                    .toLowerCase()
+                                    .startsWith('overdue'))
+                              task.aiReason!,
                           ].join(' · '),
                           style: context.text.labelSmall?.copyWith(
                             color: task.isOverdue

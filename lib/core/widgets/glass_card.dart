@@ -43,13 +43,18 @@ class GlassCard extends StatelessWidget {
         borderRadius: borderRadius,
         color: tokens.glassFill,
         border: Border.all(color: tokens.glassStroke),
+        // The accent identifies the module; it is not decoration. A full-card
+        // wash at eight different hues turns a dashboard into a colour chart,
+        // so this is a soft bloom that fades out before the card's midpoint and
+        // leaves most of the surface neutral.
         gradient: accentColor == null
             ? null
             : LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
+                stops: const <double>[0, 0.55],
                 colors: <Color>[
-                  accentColor.withValues(alpha: context.isDark ? 0.22 : 0.14),
+                  accentColor.withValues(alpha: context.isDark ? 0.13 : 0.06),
                   tokens.glassFill,
                 ],
               ),

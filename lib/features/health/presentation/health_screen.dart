@@ -106,11 +106,21 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
                     title: 'Today',
                     subtitle: 'Tap any metric to log it',
                   ),
-                  GridView.count(
-                    crossAxisCount: 2,
+                  GridView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    childAspectRatio: 2.1,
+                    // A fixed aspect ratio overflows as soon as the text scales
+                    // up, because the cell height shrinks with the column width
+                    // while the content grows. An explicit extent that tracks
+                    // the text scale cannot.
+                    gridDelegate:
+                        SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisExtent: 96 *
+                          MediaQuery.textScalerOf(context)
+                              .scale(1)
+                              .clamp(1.0, 1.6),
+                    ),
                     children: <Widget>[
                       for (final kind in <HealthKind>[
                         HealthKind.sleep,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 import 'app_spacing.dart';
@@ -132,6 +131,15 @@ class LifeOsTokens extends ThemeExtension<LifeOsTokens> {
 abstract final class AppTheme {
   const AppTheme._();
 
+  static const String _sans = 'Inter';
+  static const String _serif = 'InstrumentSerif';
+
+  /// Inter ships as a variable font, so a weight is a variation axis rather
+  /// than a separate file. `fontWeight` alone would make the engine synthesise
+  /// a fake bold.
+  static List<FontVariation> _weight(double value) =>
+      <FontVariation>[FontVariation('wght', value)];
+
   static ThemeData light({
     ColorScheme? dynamicScheme,
     bool highContrast = false,
@@ -167,27 +175,41 @@ abstract final class AppTheme {
     required bool highContrast,
   }) {
     final isDark = scheme.brightness == Brightness.dark;
-    final baseText = isDark ? Typography.whiteMountainView : Typography.blackMountainView;
-    final textTheme = GoogleFonts.interTextTheme(baseText).copyWith(
-      displaySmall: GoogleFonts.instrumentSerif(
-        textStyle: baseText.displaySmall,
-        fontWeight: FontWeight.w400,
-      ),
-      headlineMedium: GoogleFonts.inter(
-        textStyle: baseText.headlineMedium,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.5,
-      ),
-      titleLarge: GoogleFonts.inter(
-        textStyle: baseText.titleLarge,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.2,
-      ),
-      labelLarge: GoogleFonts.inter(
-        textStyle: baseText.labelLarge,
-        fontWeight: FontWeight.w600,
-      ),
-    );
+    final baseText =
+        isDark ? Typography.whiteMountainView : Typography.blackMountainView;
+
+    // Fonts are bundled assets, not fetched at runtime. `google_fonts` pulls
+    // typefaces from Google's CDN on first use, which means a visible font swap
+    // mid-session, no correct typography at all on a cold offline start, and a
+    // third-party request from an app that promises neither.
+    final textTheme = baseText.apply(fontFamily: _sans).copyWith(
+          displaySmall: baseText.displaySmall?.copyWith(
+            fontFamily: _serif,
+            fontWeight: FontWeight.w400,
+          ),
+          headlineMedium: baseText.headlineMedium?.copyWith(
+            fontFamily: _sans,
+            fontWeight: FontWeight.w600,
+            fontVariations: _weight(600),
+            letterSpacing: -0.5,
+          ),
+          titleLarge: baseText.titleLarge?.copyWith(
+            fontFamily: _sans,
+            fontWeight: FontWeight.w600,
+            fontVariations: _weight(600),
+            letterSpacing: -0.2,
+          ),
+          titleMedium: baseText.titleMedium?.copyWith(
+            fontFamily: _sans,
+            fontWeight: FontWeight.w600,
+            fontVariations: _weight(600),
+          ),
+          labelLarge: baseText.labelLarge?.copyWith(
+            fontFamily: _sans,
+            fontWeight: FontWeight.w600,
+            fontVariations: _weight(600),
+          ),
+        );
 
     final effectiveTokens =
         highContrast ? tokens.toHighContrast(scheme) : tokens;

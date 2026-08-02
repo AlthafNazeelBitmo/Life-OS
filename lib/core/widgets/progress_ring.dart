@@ -50,21 +50,32 @@ class ProgressRing extends StatelessWidget {
               strokeWidth: strokeWidth,
             ),
             child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text(
-                    label ?? '${(animated * 100).round()}%',
-                    style: context.text.labelLarge,
-                  ),
-                  if (caption != null)
+              // The ring is a fixed square, so its contents must never dictate
+              // its size: a caption like "Running on empty" would otherwise
+              // wrap and overflow the bottom.
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: strokeWidth + 2),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
                     Text(
-                      caption!,
-                      style: context.text.labelSmall?.copyWith(
-                        color: context.colors.onSurfaceVariant,
-                      ),
+                      label ?? '${(animated * 100).round()}%',
+                      style: context.text.labelLarge,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                ],
+                    if (caption != null)
+                      Text(
+                        caption!,
+                        style: context.text.labelSmall?.copyWith(
+                          color: context.colors.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                  ],
+                ),
               ),
             ),
           ),

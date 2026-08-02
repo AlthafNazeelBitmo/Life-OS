@@ -255,7 +255,12 @@ class _DimensionSlider extends StatelessWidget {
         children: <Widget>[
           SizedBox(
             width: 96,
-            child: Text(dimension.label, style: context.text.bodyMedium),
+            child: Text(
+              dimension.label,
+              style: context.text.bodyMedium,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           Expanded(
             child: Slider(

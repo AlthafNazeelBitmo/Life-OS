@@ -61,21 +61,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               slivers: <Widget>[
                 SliverAppBar.large(
                   backgroundColor: Colors.transparent,
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text(
-                        '${data.greeting}${user == null ? '' : ', ${user.firstName}'}',
-                        style: context.text.headlineMedium,
-                      ),
-                      Text(
-                        Fmt.longDate(data.date),
-                        style: context.text.bodySmall?.copyWith(
-                          color: context.colors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+                  // Single line only. SliverAppBar.large scales its title by
+                  // 1.5x and animates it between the expanded and collapsed
+                  // positions; a multi-line title collides with the toolbar on
+                  // the way up. The date lives in the body instead.
+                  title: Text(
+                    '${data.greeting}${user == null ? '' : ', ${user.firstName}'}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   actions: <Widget>[
                     IconButton(
@@ -89,6 +82,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       icon: const Icon(Icons.settings_outlined),
                     ),
                   ],
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(Gap.lg, 0, Gap.lg, Gap.md),
+                    child: Text(
+                      Fmt.longDate(data.date),
+                      style: context.text.bodyMedium?.copyWith(
+                        color: context.colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
                 ),
                 const SliverToBoxAdapter(child: QuickAddBar()),
                 SliverPadding(

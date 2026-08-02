@@ -9,6 +9,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_backdrop.dart';
+import '../../../core/widgets/chip_strip.dart';
 import '../../../core/widgets/glass_card.dart';
 import '../../../core/widgets/progress_ring.dart';
 import '../../../core/widgets/section_header.dart';
@@ -102,16 +103,14 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
                     ),
                   ),
                   Gap.h16,
-                  Row(
+                  ChipStrip(
+                    padding: EdgeInsets.zero,
                     children: <Widget>[
                       for (final period in ReviewPeriod.values)
-                        Padding(
-                          padding: const EdgeInsets.only(right: Gap.xs),
-                          child: ActionChip(
-                            label: Text(period.name),
-                            onPressed: () =>
-                                context.push(Routes.reviewFor(period.name)),
-                          ),
+                        ActionChip(
+                          label: Text(period.name),
+                          onPressed: () =>
+                              context.push(Routes.reviewFor(period.name)),
                         ),
                     ],
                   ),

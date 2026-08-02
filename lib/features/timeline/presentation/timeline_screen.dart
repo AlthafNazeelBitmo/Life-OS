@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_backdrop.dart';
+import '../../../core/widgets/chip_strip.dart';
 import '../../../core/widgets/glass_card.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../data/repositories/repository_providers.dart';
@@ -111,32 +112,24 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
           backgroundColor: Colors.transparent,
           title: const Text('Timeline'),
           bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(48),
-            child: SizedBox(
-              height: 48,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: Gap.lg),
-                children: <Widget>[
-                  for (final kind in <TimelineKind>[
-                    TimelineKind.journal,
-                    TimelineKind.photo,
-                    TimelineKind.mood,
-                    TimelineKind.milestone,
-                    TimelineKind.expense,
-                    TimelineKind.event,
-                    TimelineKind.task,
-                  ])
-                    Padding(
-                      padding: const EdgeInsets.only(right: Gap.xs),
-                      child: FilterChip(
-                        label: Text(kind.name),
-                        selected: _filter.contains(kind),
-                        onSelected: (_) => _toggleFilter(kind),
-                      ),
-                    ),
-                ],
-              ),
+            preferredSize: Size.fromHeight(ChipStrip.heightFor(context)),
+            child: ChipStrip(
+              children: <Widget>[
+                for (final kind in <TimelineKind>[
+                  TimelineKind.journal,
+                  TimelineKind.photo,
+                  TimelineKind.mood,
+                  TimelineKind.milestone,
+                  TimelineKind.expense,
+                  TimelineKind.event,
+                  TimelineKind.task,
+                ])
+                  FilterChip(
+                    label: Text(kind.name),
+                    selected: _filter.contains(kind),
+                    onSelected: (_) => _toggleFilter(kind),
+                  ),
+              ],
             ),
           ),
         ),

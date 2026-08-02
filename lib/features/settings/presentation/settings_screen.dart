@@ -81,28 +81,40 @@ class SettingsScreen extends ConsumerWidget {
             _Group(
               title: 'Appearance',
               children: <Widget>[
-                ListTile(
-                  leading: const Icon(Icons.brightness_6_outlined),
-                  title: const Text('Theme'),
-                  trailing: SegmentedButton<ThemeMode>(
-                    showSelectedIcon: false,
-                    segments: const <ButtonSegment<ThemeMode>>[
-                      ButtonSegment<ThemeMode>(
-                        value: ThemeMode.light,
-                        icon: Icon(Icons.light_mode_outlined),
-                      ),
-                      ButtonSegment<ThemeMode>(
-                        value: ThemeMode.system,
-                        icon: Icon(Icons.brightness_auto_outlined),
-                      ),
-                      ButtonSegment<ThemeMode>(
-                        value: ThemeMode.dark,
-                        icon: Icon(Icons.dark_mode_outlined),
-                      ),
-                    ],
-                    selected: <ThemeMode>{settings.themeMode},
-                    onSelectionChanged: (values) =>
-                        controller.setThemeMode(values.first),
+                // The segmented control gets its own full-width row rather than
+                // ListTile.trailing: three segments plus a label do not fit
+                // beside each other on a narrow phone.
+                const ListTile(
+                  leading: Icon(Icons.brightness_6_outlined),
+                  title: Text('Theme'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(Gap.lg, 0, Gap.lg, Gap.md),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: SegmentedButton<ThemeMode>(
+                      showSelectedIcon: false,
+                      segments: const <ButtonSegment<ThemeMode>>[
+                        ButtonSegment<ThemeMode>(
+                          value: ThemeMode.light,
+                          icon: Icon(Icons.light_mode_outlined),
+                          label: Text('Light'),
+                        ),
+                        ButtonSegment<ThemeMode>(
+                          value: ThemeMode.system,
+                          icon: Icon(Icons.brightness_auto_outlined),
+                          label: Text('Auto'),
+                        ),
+                        ButtonSegment<ThemeMode>(
+                          value: ThemeMode.dark,
+                          icon: Icon(Icons.dark_mode_outlined),
+                          label: Text('Dark'),
+                        ),
+                      ],
+                      selected: <ThemeMode>{settings.themeMode},
+                      onSelectionChanged: (values) =>
+                          controller.setThemeMode(values.first),
+                    ),
                   ),
                 ),
                 SwitchListTile(

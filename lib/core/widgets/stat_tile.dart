@@ -92,10 +92,16 @@ class StatTile extends StatelessWidget {
                   ),
                   if (unit != null) ...<Widget>[
                     Gap.w4,
-                    Text(
-                      unit!,
-                      style: context.text.labelMedium?.copyWith(
-                        color: context.colors.onSurfaceVariant,
+                    // Flexible: these tiles sit four-across on a small phone,
+                    // and a unit like "glasses" is wider than the column.
+                    Flexible(
+                      child: Text(
+                        unit!,
+                        style: context.text.labelMedium?.copyWith(
+                          color: context.colors.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -114,11 +120,16 @@ class StatTile extends StatelessWidget {
                           deltaValue >= 0 ? tokens.positive : tokens.negative,
                     ),
                     Gap.w4,
-                    Text(
-                      '${(deltaValue.abs() * 100).toStringAsFixed(0)}%',
-                      style: context.text.labelSmall?.copyWith(
-                        color:
-                            deltaValue >= 0 ? tokens.positive : tokens.negative,
+                    Flexible(
+                      child: Text(
+                        '${(deltaValue.abs() * 100).toStringAsFixed(0)}%',
+                        style: context.text.labelSmall?.copyWith(
+                          color: deltaValue >= 0
+                              ? tokens.positive
+                              : tokens.negative,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
