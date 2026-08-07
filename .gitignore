@@ -42,3 +42,6 @@ ios/Runner/Runner.entitlements.local
 # macos/
 # linux/
 # windows/
+
+# Golden-test diff output. Regenerated on every failing run.
+test/**/failures/

@@ -155,8 +155,10 @@ real and unit-tested, so this is a dependency change rather than a rewrite.
 `_openConnection()`. The OS sandbox is the current protection.
 
 **Backup key derivation.** `EncryptionService` derives a passphrase key with
-salted SHA-256. Move to PBKDF2 (or Argon2) with a high iteration count before
-shipping; the envelope format already carries a version field for exactly this.
+PBKDF2-HMAC-SHA256 at 120 000 iterations, over a 16-byte salt generated per
+file and carried inside the envelope. Argon2id is stronger still if your threat
+model justifies the dependency; the envelope's `v` and `iter` fields exist so
+either the algorithm or the cost can be raised without orphaning old backups.
 
 **Certificate pinning** for provider calls, if your threat model includes it.
 

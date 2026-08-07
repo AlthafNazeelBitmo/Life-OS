@@ -170,6 +170,17 @@ extension HabitLogRowX on HabitLogRow {
       );
 }
 
+extension HabitLogX on HabitLog {
+  HabitLogsCompanion toCompanion() => HabitLogsCompanion.insert(
+        id: id,
+        habitId: habitId,
+        dayKey: dayKey,
+        recordedAt: recordedAt,
+        value: Value(value),
+        note: Value(note),
+      );
+}
+
 extension GoalRowX on GoalRow {
   Goal toEntity({List<Milestone> milestones = const <Milestone>[]}) => Goal(
         id: id,

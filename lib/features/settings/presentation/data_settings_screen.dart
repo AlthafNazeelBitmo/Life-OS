@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -58,12 +59,60 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
         );
       });
 
-  Future<String?> _askPassphrase() async {
+  Future<void> _restore() async {
+    const group = XTypeGroup(
+      label: 'LifeOS backup',
+      extensions: <String>['json', 'lifeos'],
+    );
+    final picked = await openFile(acceptedTypeGroups: <XTypeGroup>[group]);
+    if (picked == null) return;
+
+    // An encrypted archive cannot be read without the passphrase, so ask for
+    // it up front rather than failing after the user has waited.
+    String? passphrase;
+    if (picked.path.endsWith('.lifeos')) {
+      passphrase = await _askPassphrase(
+        title: 'Open encrypted backup',
+        action: 'Restore',
+      );
+      if (passphrase == null) return;
+    }
+
+    await _run(() async {
+      final result = await ref
+          .read(exportServiceProvider)
+          .importJson(File(picked.path), passphrase: passphrase);
+      if (!mounted) return;
+
+      result.fold(
+        (summary) {
+          if (summary.isEmpty) {
+            context.showError('That backup contained nothing to restore.');
+            return;
+          }
+          // Reminders and home-screen widgets rebuild themselves: the restore
+          // wrote through the same tables `reminderSyncProvider` and
+          // `homeWidgetSyncProvider` watch, and their transaction has
+          // committed by the time this runs.
+          context.showSnack(
+            'Restored ${summary.total} records'
+            '${summary.totalSkipped == 0 ? '' : ' · ${summary.totalSkipped} skipped'}',
+          );
+        },
+        (failure) => context.showError(failure.message),
+      );
+    });
+  }
+
+  Future<String?> _askPassphrase({
+    String title = 'Encrypt this backup',
+    String action = 'Encrypt',
+  }) async {
     final controller = TextEditingController();
     return showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Encrypt this backup'),
+        title: Text(title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,8 +125,10 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
             ),
             Gap.h12,
             Text(
-              'There is no recovery. If you lose this passphrase the backup '
-              'cannot be opened — by you or by anyone else.',
+              action == 'Restore'
+                  ? 'The passphrase you set when this backup was created.'
+                  : 'There is no recovery. If you lose this passphrase the '
+                      'backup cannot be opened — by you or by anyone else.',
               style: dialogContext.text.labelSmall,
             ),
           ],
@@ -89,7 +140,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(controller.text),
-            child: const Text('Encrypt'),
+            child: Text(action),
           ),
         ],
       ),
@@ -132,6 +183,21 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
                     ),
                     enabled: !_busy,
                     onTap: _exportCsv,
+                  ),
+                ],
+              ),
+              Gap.h16,
+              SettingsGroup(
+                title: 'Restore',
+                children: <Widget>[
+                  ListTile(
+                    leading: const Icon(Icons.restore_rounded),
+                    title: const Text('Restore from a backup'),
+                    subtitle: const Text(
+                      'Merges by record id, so restoring twice is safe',
+                    ),
+                    enabled: !_busy,
+                    onTap: _restore,
                   ),
                 ],
               ),

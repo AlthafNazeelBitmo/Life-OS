@@ -108,6 +108,24 @@ Nothing in that path is manual invalidation. The Drift stream is what closes
 the loop, which is why logging a habit by voice repaints the dashboard ring
 without either feature knowing about the other.
 
+### Surfaces outside the widget tree
+
+The same principle covers the two things a Drift stream cannot repaint: the
+notification schedule and the home-screen widgets. Both are derived from the
+database, both live outside the app process, and both would rot if every write
+path had to remember to refresh them.
+
+`TableWatcher` (`lib/data/local/table_watcher.dart`) subscribes to Drift's
+`tableUpdates` for a named set of tables and runs a rebuild once the writes
+settle. `reminderSyncProvider` and `homeWidgetSyncProvider` are the two
+instances; `main()` mounts them at startup and nothing else refers to them.
+
+The consequences are worth stating, because they are the reason for the design:
+a task created by voice, by the assistant, or by restoring a backup schedules
+its reminder through the same path as one typed into the task screen, and a new
+write path added tomorrow gets the behaviour for free. The debounce means a
+burst of writes — a restore, a batch of habit ticks — rebuilds once.
+
 ## Layer responsibilities
 
 ### Domain (`lib/domain/`)

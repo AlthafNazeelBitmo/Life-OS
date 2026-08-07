@@ -9,6 +9,7 @@ import '../../core/error/result.dart';
 import '../../core/settings/settings_controller.dart';
 import '../../core/utils/app_logger.dart';
 import '../local/app_database.dart';
+import '../local/restore_writer.dart';
 import 'supabase_bootstrap.dart';
 import 'sync_queue_writer.dart';
 
@@ -149,19 +150,31 @@ class SyncService {
           throw const SyncFailure('Not signed in to the cloud');
         }
 
-        var imported = 0;
+        // Remote rows are the same `entity.toJson()` shape the push side
+        // wrote, plus the `user_id` the policy keys on. Stripping that gives
+        // exactly what RestoreWriter parses, so pull and file-import share one
+        // code path and cannot drift apart.
+        final tables = <String, List<dynamic>>{};
         for (final entry in _remoteTables.entries) {
           final rows = await client.from(entry.value).select().eq(
                 'user_id',
                 userId,
               );
-          imported += rows.length;
+          tables[_restoreKeyFor(entry.key)] = rows
+              .map((row) => Map<String, dynamic>.from(row)..remove('user_id'))
+              .toList();
           AppLogger.info('sync', 'Pulled ${rows.length} from ${entry.value}');
-          // Rows are handed to the same mappers the local writes use; see
-          // docs/API.md for the payload shape each table expects.
         }
-        return imported;
+
+        final summary = await RestoreWriter(_db).write(tables);
+        AppLogger.info('sync', 'Pull wrote $summary');
+        return summary.total;
       }, onError: (e, s) => SyncFailure('Could not pull cloud data', cause: e));
+
+  /// Local table name → the key [RestoreWriter] expects. They agree everywhere
+  /// except money, where the local table and the backup key differ.
+  static String _restoreKeyFor(String localTable) =>
+      localTable == 'money_transactions' ? 'transactions' : localTable;
 
   Future<int> pendingCount() => _queue.depth();
 

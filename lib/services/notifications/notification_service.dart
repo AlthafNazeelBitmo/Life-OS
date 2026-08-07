@@ -71,6 +71,18 @@ class NotificationService {
 
     await _createChannels();
     await _initPush();
+    await _replayLaunchTap();
+  }
+
+  /// A tap that *started* the app never reaches the callback above — the
+  /// platform hands it over as launch details instead. Without this, tapping a
+  /// reminder on a cold device opens the dashboard and loses the destination.
+  Future<void> _replayLaunchTap() async {
+    final launch = await _plugin.getNotificationAppLaunchDetails();
+    if (launch == null || !launch.didNotificationLaunchApp) return;
+
+    final payload = launch.notificationResponse?.payload;
+    if (payload != null && payload.isNotEmpty) _taps.add(payload);
   }
 
   Future<void> _createChannels() async {

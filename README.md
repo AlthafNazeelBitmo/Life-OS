@@ -186,9 +186,10 @@ A few things are deliberately marked rather than hidden:
 - **Localisation covers app chrome**, with a table-based implementation so a
   translator can add a language by appending one map. Keys map 1:1 to ARB for a
   later `gen-l10n` migration.
-- **Backup encryption derives its key with salted SHA-256.** PBKDF2 is the right
-  answer for a production release and is a drop-in change; the current choice is
-  called out in `EncryptionService` and `docs/DEPLOYMENT.md`.
+- **Backup encryption is AES-256-GCM with PBKDF2-HMAC-SHA256.** The salt is
+  generated per file and travels inside the envelope, so a backup opens on any
+  device rather than only the one that wrote it. Argon2id would be stronger; the
+  trade-off is written up in `docs/DEPLOYMENT.md`.
 
 ## Licence
 

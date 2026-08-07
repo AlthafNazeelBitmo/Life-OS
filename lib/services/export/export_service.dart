@@ -15,6 +15,7 @@ import '../../core/error/result.dart';
 import '../../core/settings/settings_controller.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/local/app_database.dart';
+import '../../data/local/restore_writer.dart';
 import '../../data/mappers/mappers.dart';
 import '../../data/repositories/repository_providers.dart';
 import '../../domain/entities/insight.dart';
@@ -42,66 +43,72 @@ class ExportService {
     return directory;
   }
 
+  /// Every table, serialised exactly as [importJson] expects to read it back.
+  ///
+  /// Kept separate from [exportJson] so the round trip can be tested without a
+  /// filesystem: these keys and [RestoreWriter.tableOrder] have to agree, and
+  /// nothing but a test that exports and re-imports will notice when they stop.
+  Future<Map<String, dynamic>> snapshot() async => <String, dynamic>{
+        'schema_version': _schemaVersion,
+        'exported_at': DateTime.now().toIso8601String(),
+        'journal_entries': (await _db.select(_db.journalEntries).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'attachments': (await _db.select(_db.attachments).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'mood_entries': (await _db.select(_db.moodEntries).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'habits': (await _db.select(_db.habits).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'habit_logs': (await _db.select(_db.habitLogs).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'goals': (await _db.select(_db.goals).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'milestones': (await _db.select(_db.milestones).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'tasks': (await _db.select(_db.tasks).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'calendar_events': (await _db.select(_db.calendarEvents).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'transactions': (await _db.select(_db.moneyTransactions).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'categories': (await _db.select(_db.moneyCategories).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'budgets': (await _db.select(_db.budgets).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'savings_goals': (await _db.select(_db.savingsGoals).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'health_metrics': (await _db.select(_db.healthMetrics).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'people': (await _db.select(_db.people).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'interactions': (await _db.select(_db.interactions).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+        'insights': (await _db.select(_db.insights).get())
+            .map((row) => row.toEntity().toJson())
+            .toList(),
+      };
+
   /// Complete archive of every table, suitable for re-import.
   Future<Result<File>> exportJson({String? passphrase}) =>
       Result.guard(() async {
-        final payload = <String, dynamic>{
-          'schema_version': _schemaVersion,
-          'exported_at': DateTime.now().toIso8601String(),
-          'journal_entries': (await _db.select(_db.journalEntries).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'attachments': (await _db.select(_db.attachments).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'mood_entries': (await _db.select(_db.moodEntries).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'habits': (await _db.select(_db.habits).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'habit_logs': (await _db.select(_db.habitLogs).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'goals': (await _db.select(_db.goals).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'milestones': (await _db.select(_db.milestones).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'tasks': (await _db.select(_db.tasks).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'calendar_events': (await _db.select(_db.calendarEvents).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'transactions': (await _db.select(_db.moneyTransactions).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'categories': (await _db.select(_db.moneyCategories).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'budgets': (await _db.select(_db.budgets).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'savings_goals': (await _db.select(_db.savingsGoals).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'health_metrics': (await _db.select(_db.healthMetrics).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'people': (await _db.select(_db.people).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'interactions': (await _db.select(_db.interactions).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-          'insights': (await _db.select(_db.insights).get())
-              .map((row) => row.toEntity().toJson())
-              .toList(),
-        };
-
-        var contents = const JsonEncoder.withIndent('  ').convert(payload);
+        var contents =
+            const JsonEncoder.withIndent('  ').convert(await snapshot());
         var extension = 'json';
 
         if (passphrase != null && passphrase.isNotEmpty) {
@@ -332,7 +339,10 @@ class ExportService {
   ///
   /// Import is additive and id-keyed, so re-importing the same file twice is a
   /// no-op rather than a duplicate of the user's entire life.
-  Future<Result<int>> importJson(File file, {String? passphrase}) =>
+  Future<Result<RestoreSummary>> importJson(
+    File file, {
+    String? passphrase,
+  }) =>
       Result.guard(() async {
         var contents = await file.readAsString();
         if (file.path.endsWith('.lifeos')) {
@@ -345,7 +355,13 @@ class ExportService {
           );
         }
 
-        final payload = jsonDecode(contents) as Map<String, dynamic>;
+        final Map<String, dynamic> payload;
+        try {
+          payload = jsonDecode(contents) as Map<String, dynamic>;
+        } on FormatException {
+          throw const ValidationFailure('That file is not a LifeOS backup.');
+        }
+
         final version = payload['schema_version'] as int? ?? 1;
         if (version > _schemaVersion) {
           throw const ValidationFailure(
@@ -353,9 +369,22 @@ class ExportService {
           );
         }
 
+        final tables = <String, List<dynamic>>{
+          for (final table in RestoreWriter.tableOrder)
+            if (payload[table] is List<dynamic>)
+              table: payload[table] as List<dynamic>,
+        };
+        if (tables.isEmpty) {
+          throw const ValidationFailure(
+            'That backup contains no records LifeOS recognises.',
+          );
+        }
+
+        final summary = await RestoreWriter(_db).write(tables);
+
         // Reindexing afterwards is what makes imported records searchable.
         await _ref.read(searchRepositoryProvider).reindex();
-        return (payload['journal_entries'] as List<dynamic>? ?? const []).length;
+        return summary;
       }, onError: (e, s) => ValidationFailure(
             e is Failure ? e.message : 'That file could not be read.',
           ));

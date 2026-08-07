@@ -42,6 +42,34 @@ abstract final class Routes {
   static const String settingsNotifications = '/settings/notifications';
   static const String settingsData = '/settings/data';
 
+  /// Destinations a notification payload may open.
+  ///
+  /// A push message is remote input, so this is an allow-list rather than a
+  /// pattern match: a payload either names a screen LifeOS is willing to be
+  /// sent to, or it is ignored. Detail routes are absent on purpose — they
+  /// need an id, and a bad one lands the user on an error page.
+  static const Set<String> deepLinkTargets = <String>{
+    dashboard,
+    journal,
+    journalCompose,
+    mood,
+    habits,
+    goals,
+    tasks,
+    calendar,
+    health,
+    people,
+    timeline,
+    search,
+    chat,
+    insights,
+    money,
+    plan,
+    settings,
+  };
+
+  static bool isDeepLinkable(String path) => deepLinkTargets.contains(path);
+
   static String journalEntryFor(String id) => '$journalEntry/$id';
   static String habitDetailFor(String id) => '$habitDetail/$id';
   static String goalDetailFor(String id) => '$goalDetail/$id';

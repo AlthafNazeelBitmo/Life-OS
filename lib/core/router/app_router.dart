@@ -34,7 +34,9 @@ import '../../features/settings/presentation/privacy_settings_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/tasks/presentation/tasks_screen.dart';
 import '../../features/timeline/presentation/timeline_screen.dart';
+import '../../services/notifications/notification_service.dart';
 import '../settings/settings_controller.dart';
+import '../utils/app_logger.dart';
 import 'app_routes.dart';
 import 'app_shell.dart';
 
@@ -49,7 +51,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
   final refresh = _RouterRefresh(ref);
   ref.onDispose(refresh.dispose);
 
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: Routes.splash,
     refreshListenable: refresh,
@@ -279,6 +281,24 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
       body: Center(child: Text('No screen for ${state.uri}')),
     ),
   );
+
+  // A reminder that goes nowhere when tapped is not a reminder. The router is
+  // the only thing in the app that can navigate, so it owns this subscription
+  // rather than some widget that might not be mounted when the tap arrives.
+  //
+  // Navigating here cannot bypass the lock screen: `redirect` above runs on
+  // every `go`, and sends a locked session to /lock whatever the target was.
+  final tapSubscription =
+      ref.read(notificationServiceProvider).onTap.listen((payload) {
+    if (Routes.isDeepLinkable(payload)) {
+      router.go(payload);
+    } else {
+      AppLogger.warn('router', 'Ignored notification target: $payload');
+    }
+  });
+  ref.onDispose(tapSubscription.cancel);
+
+  return router;
 });
 
 /// Bridges Riverpod state into GoRouter's [Listenable]-based refresh.
