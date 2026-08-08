@@ -49,6 +49,9 @@ dependencies:
 
   # --- UI ----------------------------------------------------------------
   cupertino_icons: ^1.0.8
+  # Held at 1.8.1 by pubspec.lock. 1.9.0's Gradle script needs a newer Kotlin
+  # DSL than AGP 8.9.1 / Kotlin 2.1.0 provide, and fails to compile at
+  # assembleRelease. Raise those in android/settings.gradle.kts before upgrading.
   dynamic_color: ^1.7.0
   fl_chart: ^0.69.2
   table_calendar: ^3.1.3

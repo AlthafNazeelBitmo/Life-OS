@@ -18,6 +18,11 @@ flutter create . \
   --org com.lifeos \
   --platforms=android,ios,web,macos,windows,linux
 
+# `flutter create` also drops in its counter-app smoke test, which references a
+# `MyApp` that does not exist here and breaks `flutter test` for anyone who runs
+# this script. The real suite lives in test/.
+rm -f test/widget_test.dart
+
 echo "==> flutter pub get"
 flutter pub get
 

@@ -1,10 +1,14 @@
 # Dart / Flutter
+#
+# `pubspec.lock` is deliberately NOT ignored. LifeOS is an application, not a
+# library: committing the lockfile is what makes a CI run and a developer's
+# machine resolve the same package versions, so a transitive patch release
+# cannot turn the branch red without a commit to blame.
 .dart_tool/
 .packages
 .pub-cache/
 .pub/
 build/
-pubspec.lock
 .flutter-plugins
 .flutter-plugins-dependencies
 coverage/

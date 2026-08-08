@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+# A newer push makes the previous run's answer irrelevant, so stop paying for it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Pinned rather than tracking `stable`. An SDK bump should be a commit someone
+  # can revert, not something that lands on a Tuesday and reddens every branch.
+  FLUTTER_VERSION: 3.35.4
+
+jobs:
+  check:
+    name: Analyze and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install packages
+        run: flutter pub get
+
+      # Drift, Freezed and json_serializable output is gitignored — nothing in
+      # lib/ compiles until this has run.
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      # Errors and warnings fail the build; the analyzer's style infos do not.
+      # `analysis_options.yaml` is where that line gets moved, not here.
+      - name: Analyze
+        run: dart analyze lib test
+
+      # Riverpod's lints are plugin lints: `dart analyze` cannot see them, and
+      # the ones that matter here are real bugs — a notifier exposing state
+      # outside `state` is a widget that silently stops rebuilding.
+      - name: Riverpod lints
+        run: dart run custom_lint
+
+      # Goldens are excluded on purpose: they encode font rasterisation, which
+      # differs between this runner and a developer's machine. Run them locally
+      # with `flutter test --tags golden` when the dashboard changes.
+      - name: Test
+        run: flutter test --exclude-tags golden --reporter expanded
+
+  apk:
+    name: Build APK
+    needs: check
+    # Pull requests from this repo already built the same commit on push.
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install packages
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      # The Gradle wrapper and local.properties are per-machine and gitignored;
+      # `flutter create` regenerates them for whatever SDK is installed. This is
+      # exactly what tool/bootstrap.sh does, so a green build here also proves a
+      # fresh clone can still be set up the way the README says.
+      - name: Generate the Android project files
+        run: |
+          flutter create . \
+            --project-name lifeos \
+            --org com.lifeos \
+            --platforms=android
+          # It also drops in its counter-app smoke test, which breaks the suite.
+          rm -f test/widget_test.dart
+
+      # Split by ABI: the universal APK is 75MB, an arm64 phone needs 27MB of it.
+      - name: Build
+        run: flutter build apk --release --split-per-abi
+
+      # Debug-signed, so installable but not publishable. Wiring a real keystore
+      # is step 3 in docs/DEPLOYMENT.md.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lifeos-apk-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/app-*-release.apk
+          if-no-files-found: error
+          retention-days: 14

@@ -22,8 +22,6 @@ class JournalFeedController extends AsyncNotifier<List<JournalEntry>> {
   bool _hasMore = true;
   String _query = '';
 
-  bool get hasMore => _hasMore;
-
   @override
   Future<List<JournalEntry>> build() async {
     _offset = 0;
